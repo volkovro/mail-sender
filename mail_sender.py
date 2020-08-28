@@ -114,6 +114,10 @@ if __name__ == '__main__':
             
             BODY = STATE_CMD[1]
         else:
+            print('''
+[MESSAGE] :
+
+'''+STATE_CMD[0])
             BODY = STATE_CMD[0]
         
         
