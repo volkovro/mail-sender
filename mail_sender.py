@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-
-######### -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -15,21 +14,6 @@ from email.mime.text import MIMEText
 
 def sender_mail(BODY):
 
-
-    start_path = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(start_path, 'config.ini')
-    
-    if not os.path.isdir('report'):
-             os.mkdir('report')
-
-    if os.path.exists(config_path):
-        cfg_pars = ConfigParser()
-        cfg_pars.read(config_path)
-    else:
-        print('Config not found. Need make config.ini')
-        sys.exit(1)
-
-    
     name_f = str(time.ctime())
     open_f = open(str(start_path)+'/report/'+name_f+'.txt', 'w')
     open_f.write(BODY)
@@ -42,28 +26,20 @@ def sender_mail(BODY):
     SUBJECT = str(cfg_pars.get('SUBJECT', 'subject'))
 
 
-
-    TRASH = str(cfg_pars.get('trash', 'trash'))
-
-
-
     if 'recips' in cfg_pars:
         msg = MIMEMultipart('utf-8')
         msg['From'] = addr_from
         msg['To'] = ', '.join(EMAILS.split(', '))
         msg['Subject'] = SUBJECT
-        body = MIMEText(BODY+TRASH)
+        body = MIMEText(BODY)
         msg.attach(body)
     else:
         msg = MIMEMultipart('utf-8')
         msg['From'] = addr_from
         msg['To'] = EMAILS
         msg['Subject'] = SUBJECT
-        body = MIMEText(BODY+TRASH)
+        body = MIMEText(BODY)
         msg.attach(body)
-
-
-
 
 
     if 'port' in cfg_pars:
@@ -88,8 +64,57 @@ def sender_mail(BODY):
     server.quit()
 
 
-if __name__ == '__main__':
-    CMD = sys.argv
-    BODY = str(subprocess.check_output(CMD[1::], universal_newlines=True, timeout=20000))
-    sender_mail(BODY)
+def run_proc(CMD):
+    
+    if 'timeout' in cfg_pars:
+        time=cfg_pars.get('timeout', 'seconds')
+    else:
+        time=2000
+    
+    PROCESS = subprocess.run(CMD,
+                             universal_newlines=True,
+                             shell=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             timeout=time
+                             )
+    out = PROCESS.stdout
+    err = PROCESS.stderr
+    return out, err
 
+
+if __name__ == '__main__':
+
+        start_path = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(start_path, 'config.ini')
+ 
+        
+        if os.path.exists(config_path):
+            cfg_pars = ConfigParser()
+            cfg_pars.read(config_path)
+        else:
+            print('''
+[ERROR]:
+        Config not found. Need make config.ini''')
+            sys.exit(1)
+        
+        CMD = str(' '.join(sys.argv[1::]))
+        STATE_CMD = run_proc(CMD)
+        
+
+        
+        if STATE_CMD[1] != '':
+            print('''
+[WARNING] :
+        The process ended with an error:
+        '''+ STATE_CMD[1])
+            
+            BODY = STATE_CMD[1]
+        else:
+            BODY = STATE_CMD[0]
+        
+        
+        
+        sender_mail(BODY)
+       
+        print('[DONE]')
