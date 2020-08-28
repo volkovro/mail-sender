@@ -67,7 +67,7 @@ def sender_mail(BODY):
 def run_proc(CMD):
     
     if 'timeout' in cfg_pars:
-        time=cfg_pars.get('timeout', 'seconds')
+        time=int(cfg_pars.get('timeout', 'seconds'))
     else:
         time=2000
     
