@@ -14,6 +14,9 @@ from email.mime.text import MIMEText
 
 def sender_mail(BODY):
 
+    if not os.path.isdir('report'):
+        os.mkdir('report')
+    
     name_f = str(time.ctime())
     open_f = open(str(start_path)+'/report/'+name_f+'.txt', 'w')
     open_f.write(BODY)
