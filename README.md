@@ -41,7 +41,7 @@ Mail-sender is a simple utility for sending program output to mail
     ```
     - If use other sripts or binaries
     ```
-    ./mail_sender.py ./puth/to/program
+    ./mail_sender.py ./path/to/program
     ```
     
 ***P.S:***
